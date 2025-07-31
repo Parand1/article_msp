@@ -1,4 +1,20 @@
---NUMERO DE CASOS DE APENDICECTOMIA, COLECISTECTOMIA Y CESAREAS POR SECTOR
+-- JUSTIFICACION Y CONTEO DE CASOS MAS COMUNES DE CIRUGIAS EN ECUADOR 2024
+SELECT
+       cau_cie10,
+       COUNT(*) AS numero_de_casos
+     FROM
+       warehouse.egresosnor
+     WHERE
+       cie10_codigo LIKE 'K%' -- Capítulo de Enf. del Sist. Digestivo (Apendicectomía, Colecistectomía)
+       OR cie10_codigo LIKE 'O%' -- Capítulo de Embarazo, parto y puerperio (Cesárea)
+    GROUP BY
+      cau_cie10
+    ORDER BY
+      numero_de_casos DESC
+    LIMIT 20;
+
+--CONTEO NUMERO DE CASOS DE APENDICECTOMIA, COLECISTECTOMIA Y CESAREAS POR SECTOR
+-- TABLA 1
 SELECT
 sector_normalizado,
 CASE 
@@ -14,3 +30,37 @@ OR cie10_codigo LIKE 'K80%'
 OR cie10_codigo LIKE 'K81%'
 OR cie10_codigo LIKE 'O82%')
 GROUP BY sector_normalizado, procedimiento;
+
+
+-- ANALISIS ESTANCIA HOSPITALARIA
+-- Análisis de Estancia Hospitalaria Promedio (Tabla 2)
+     SELECT
+       sector_normalizado,
+       CASE
+         WHEN cie10_codigo LIKE 'K35%' THEN 'Apendicectomía'
+         WHEN cie10_codigo LIKE 'K80%' OR cie10_codigo LIKE 'K81%' THEN 'Colecistectomía'
+         WHEN cie10_codigo LIKE 'O82%' THEN 'Parto por Cesárea'
+       END AS procedimiento,
+    
+      COUNT(*) AS numero_de_casos,
+      ROUND(AVG(dias_estancia), 2) AS estancia_promedio_dias,
+      ROUND(STDDEV(dias_estancia), 2) AS desviacion_estandar_dias,
+      MIN(dias_estancia) AS estancia_minima_dias,
+      MAX(dias_estancia) AS estancia_maxima_dias
+   
+    FROM
+      warehouse.egresosnor
+    WHERE
+      (
+        cie10_codigo LIKE 'K35%'
+        OR cie10_codigo LIKE 'K80%'
+        OR cie10_codigo LIKE 'K81%'
+        OR cie10_codigo LIKE 'O82%'
+      )
+      AND dias_estancia < 90 -- Filtro para excluir outliers extremos (ej. estancias de meses)
+    GROUP BY
+      sector_normalizado,
+      procedimiento
+    ORDER BY
+      procedimiento,
+      sector_normalizado;
