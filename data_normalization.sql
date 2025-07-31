@@ -32,6 +32,7 @@ CREATE OR REPLACE TABLE `airy-runway-450418-q9.warehouse.egresosnor`
       sexo,
       etnia,
       prov_res,
+      con_egrpa,
       cau_cie10,
       sector -- Mantenemos el sector original para verificación
    
@@ -42,4 +43,5 @@ CREATE OR REPLACE TABLE `airy-runway-450418-q9.warehouse.egresosnor`
       SAFE_CAST(dia_estad AS INT64) >= 0
       AND fecha_egr IS NOT NULL
       AND cau_cie10 IS NOT NULL
+      AND con_egrpa IS NOT NULL
       AND sector IN ('Público', 'Privado con fines de lucro', 'Privado sin fines de lucro');

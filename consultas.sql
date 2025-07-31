@@ -64,3 +64,34 @@ GROUP BY sector_normalizado, procedimiento;
     ORDER BY
       procedimiento,
       sector_normalizado;
+
+
+--CONSULTA DE MORTALIDAD
+SELECT
+       sector_normalizado,
+       CASE
+         WHEN cie10_codigo LIKE 'K35%' THEN 'Apendicectomía'
+         WHEN cie10_codigo LIKE 'K80%' OR cie10_codigo LIKE 'K81%' THEN 'Colecistectomía'
+         WHEN cie10_codigo LIKE 'O82%' THEN 'Parto por Cesárea'
+       END AS procedimiento,
+    
+      COUNT(*) AS total_casos,
+      SUM(CASE WHEN con_egrpa LIKE 'Fallecido%' THEN 1 ELSE 0 END) AS total_fallecidos,
+      ROUND(AVG(CASE WHEN con_egrpa LIKE 'Fallecido%' THEN 1.0 ELSE 0.0 END) * 100, 3) AS tasa_mortalidad_porcentaje
+   
+    FROM
+      warehouse.egresosnor
+    WHERE
+      (
+        cie10_codigo LIKE 'K35%'
+        OR cie10_codigo LIKE 'K80%'
+        OR cie10_codigo LIKE 'K81%'
+        OR cie10_codigo LIKE 'O82%'
+      )
+    GROUP BY
+      sector_normalizado,
+      procedimiento
+    ORDER BY
+      procedimiento,
+      sector_normalizado;
+  
