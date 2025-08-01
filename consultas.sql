@@ -13,6 +13,37 @@ SELECT
       numero_de_casos DESC
     LIMIT 20;
 
+
+--JUSTIFICACION CRITERIOS DE EXCLUSION DE ESTANCIA HOSPITALARIA
+SELECT
+       COUNTIF(dias_estancia >= 90) AS numero_de_outliers,
+       COUNT(*) AS total_de_casos,
+       ROUND(COUNTIF(dias_estancia >= 90) * 100.0 / COUNT(*), 4) AS porcentaje_de_outliers
+     FROM
+       warehouse.egresosnor
+     WHERE
+       (
+        cie10_codigo LIKE 'K35%'
+        OR cie10_codigo LIKE 'K80%'
+        OR cie10_codigo LIKE 'K81%'
+        OR cie10_codigo LIKE 'O82%'
+      );
+
+
+-- JUSTIFICACION CRITERIOS DE EXCLUSION DE ESTACIA HOSPITALARIA QUARTILES
+SELECT
+       APPROX_QUANTILES(dias_estancia, 100) AS percentiles_estancia
+     FROM
+       `tu-proyecto.warehouse.egresosnor`
+     WHERE
+       (
+         cie10_codigo LIKE 'K35%'
+         OR cie10_codigo LIKE 'K80%'
+        OR cie10_codigo LIKE 'K81%'
+        OR cie10_codigo LIKE 'O82%'
+      )
+      AND dias_estancia < 90;
+
 --CONTEO NUMERO DE CASOS DE APENDICECTOMIA, COLECISTECTOMIA Y CESAREAS POR SECTOR
 -- TABLA 1
 SELECT
